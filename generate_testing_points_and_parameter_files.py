@@ -1,7 +1,5 @@
 ###!/usr/bin/env python3
 ### -*- coding: utf-8 -*-
-from sg_lib.grid.grid import *
-from sg_lib.algebraic.multiindex import *
 import numpy as np
 import os
 import shutil
@@ -49,6 +47,9 @@ right_Tref      = 3.9703890681266785E-01 + 0.1*3.9703890681266785E-01
 left_nref   = 4.4923791885375977E+00 - 0.1*4.4923791885375977E+00
 right_nref  = 4.4923791885375977E+00 + 0.1*4.4923791885375977E+00
 
+left_bound  = [left_tau, left_q0, left_omn, left_omt, left_Tref, left_nref]
+right_bound = [right_tau, right_q0, right_omn, right_omt, right_Tref, right_nref]
+
 
 # line numbers where we'll modify entries in the parameters file
 diagdir_line    = 26
@@ -61,49 +62,25 @@ nref_line       = 110
 
 if __name__ == '__main__':
 
-    dim = 6 # number of parameters in the scan
+    dim         = 6 # number of parameters in the scan
+    n_points    = 20 # number of testing parameters
     
     ############### only these variables should be modified ############
-    level 	 = 3 # grid level; this corresponds to a maximal monomial degree level - 1 in each direction
-    out_dir  = lambda n: '/home/ionut/work/code/parametric_ROMs_gyrokinetics/ETG_sim_' + str(n + 1) + '/' # in case you want to change the output directory to save sim folder
-    sim_dir_parent  = './sim_folders/'
+    out_dir         = lambda n: '/home/ionut/work/code/parametric_ROMs_gyrokinetics/ETG_sim_' + str(n + 1) + '/' # in case you want to change the output directory to save sim folder
+    sim_dir_parent  = './testing_folders/'
     sim_dir         = lambda n: sim_dir_parent + 'ETG_sim_' + str(n + 1) + '/' # folder names that contain the parameter files
     #########################################################################
 
     if not os.path.isdir(sim_dir_parent):
         os.mkdir(sim_dir_parent)
-
-    level_to_nodes  = 1
-    weights 		= [lambda x: 1. for d in range(dim)]
-    left_bounds    	= np.array([0 for d in range(dim)])
-    right_bounds   	= np.array([1 for d in range(dim)])
-
-
-    Grid_obj        = Grid(dim, level, level_to_nodes, left_bounds, right_bounds, weights)	
-    Multiindex_obj  = Multiindex(dim)
     
-    multiindex_set = Multiindex_obj.get_std_total_degree_mindex(level)
-
-    sg_points 	= Grid_obj.get_std_sg_surplus_points(multiindex_set)
-    n_sg 		= sg_points.shape[0] 
-
-    print('total number of grid points for dim =', dim, 'and level =', level, ' is n =', n_sg)
-   
-    # map sg points from [0, 1] to the respective bounds for all d parameters
-    map_rv = lambda left, right, x: left + (right - left)*x
-   
-    sg_tau      = map_rv(left_tau, right_tau, sg_points[:, 0])
-    sg_q0       = map_rv(left_q0, right_q0, sg_points[:, 1])
-    sg_omn      = map_rv(left_omn, right_omn, sg_points[:, 2])
-    sg_omt      = map_rv(left_omt, right_omt, sg_points[:, 3])
-    sg_Tref     = map_rv(left_Tref, right_Tref, sg_points[:, 4])
-    sg_nref     = map_rv(left_nref, right_nref, sg_points[:, 5])
-
-    for n in range(n_sg):
+    testing_points = np.random.uniform(left_bound, right_bound, size=(n_points, dim))
+    
+    for n in range(n_points):
         if not os.path.isdir(sim_dir(n)):
             os.mkdir(sim_dir(n))
             
-    for n in range(n_sg):
+    for n in range(n_points):
         source      = 'parameters'
         destination = sim_dir(n) + source
         
@@ -111,12 +88,12 @@ if __name__ == '__main__':
         
         line_changes = {
             diagdir_line:   "diagdir = {}".format(out_dir(n)),
-            tau_line:       "tau = {}".format(sg_tau[n]),
-            q0_line:        "q0 = {}".format(sg_q0[n]),
-            omn_line:       "omn = {}".format(sg_omn[n]),
-            omt_line:       "omt = {}".format(sg_omt[n]),
-            Tref_line:      "Tref = {}".format(sg_Tref[n]),
-            nref_line:      "nref = {}".format(sg_nref[n]),
+            tau_line:       "tau = {}".format(testing_points[n, 0]),
+            q0_line:        "q0 = {}".format(testing_points[n, 1]),
+            omn_line:       "omn = {}".format(testing_points[n, 2]),
+            omt_line:       "omt = {}".format(testing_points[n, 3]),
+            Tref_line:      "Tref = {}".format(testing_points[n, 4]),
+            nref_line:      "nref = {}".format(testing_points[n, 5]),
         }
 
         print(line_changes)
