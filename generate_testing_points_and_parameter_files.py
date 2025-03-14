@@ -62,6 +62,8 @@ nref_line       = 110
 
 if __name__ == '__main__':
 
+    np.random.seed(5126565)
+
     dim         = 6 # number of parameters in the scan
     n_points    = 20 # number of testing parameters
     
