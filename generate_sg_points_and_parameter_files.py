@@ -64,7 +64,7 @@ if __name__ == '__main__':
     dim = 6 # number of parameters in the scan
     
     ############### only these variables should be modified ############
-    level 	 = 3 # grid level; this corresponds to a maximal monomial degree level - 1 in each direction
+    level 	 = 4 # grid level; this corresponds to a maximal monomial degree level - 1 in each direction
     out_dir  = lambda n: '/home/ionut/work/code/parametric_ROMs_gyrokinetics/ETG_sim_' + str(n + 1) + '/' # in case you want to change the output directory to save sim folder
     sim_dir_parent  = './sim_folders/'
     sim_dir         = lambda n: sim_dir_parent + 'ETG_sim_' + str(n + 1) + '/' # folder names that contain the parameter files

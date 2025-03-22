@@ -1,6 +1,30 @@
 from sg_lib.grid.grid import *
 from sg_lib.algebraic.multiindex import *
 from sg_lib.operation.interpolation_to_spectral import *
+
+def read_GENE_data(file):
+
+	growth_rate = []
+	frequency 	= []
+
+	with open(file) as file:
+
+		lines = file.readlines()
+		for i, line in enumerate(lines):
+			if i >= 1:
+				tokens = line.split()
+				
+				growth_rate.append(np.float64(tokens[-2]))
+				frequency.append(np.float64(tokens[-1]))
+
+	file.close()
+
+	return np.array(growth_rate), np.array(frequency)
+
+training_data 	= 'GENE_data/train_parameter_log.txt'
+testing_data 	= 'GENE_data/test_parameter_log.txt'
+
+gr_train_all, _ = read_GENE_data(training_data)
     
 if __name__ == '__main__':
 
@@ -10,16 +34,17 @@ if __name__ == '__main__':
 	n_sg_points 		= 28 # number of training parameters
 	n_test_points    	= 20 # number of testing parameters	
 	level 				= 3 # SG level
-	r 					= 5 # reduced dimension
+	r 					= 1 # reduced dimension
 
-	test_points = np.random.uniform(0, 1, size=(dim, n_test_points))
+	gr_train = gr_train_all[:n_sg_points]
+
+	test_points = np.random.uniform(0, 1, size=(n_test_points, dim))
 	
 	# REPLACE this object (size r x r*n_training_points) with all training reduced linear operators
-	red_operators_training = np.random.uniform(0, 1, size=(r, r*n_sg_points))
+	red_operators_training = gr_train.reshape((r, r*n_sg_points))
 
 	# this object (size r x r*n_testing_points) will contain all testing reduced linear operators
 	red_operators_testing = np.zeros((r, r*n_test_points))
-
 
 	### SG SETUP ###
 	level_to_nodes 	= 1
@@ -57,7 +82,7 @@ if __name__ == '__main__':
 
 			A_hat_interp = lambda x: InterpToSpectral_obj.eval_operation_sg(multiindex_set, x)
 			for m in range(n_test_points):
-				red_operators_testing[i, j + r*m] = A_hat_interp(test_points[:, m])
+				red_operators_testing[i, j + r*m] = A_hat_interp(test_points[m, :])
 	#######################
 
-	print(red_operators_testing.shape)
+	print(red_operators_testing)
